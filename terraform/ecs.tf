@@ -57,23 +57,19 @@ resource "aws_ecs_task_definition" "medusa_task" {
   memory                   = "1024"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 
-  container_definitions = jsonencode([
-    {
-      name      = "medusa"
-      image     = "medusajs/medusa" # You can change to your custom image
-      essential = true
-      portMappings = [
-        {
-          containerPort = 9000
-          hostPort      = 9000
-          protocol      = "tcp"
-        }
-      ]
-    }
-  ])
+  container_definitions = jsonencode([{
+    name      = "medusa"
+    image     = "medusajs/medusa" # Replace with your custom image if needed
+    essential = true
+    portMappings = [{
+      containerPort = 9000
+      hostPort      = 9000
+      protocol      = "tcp"
+    }]
+  }])
 }
 
-# ECS Service
+# ECS Service for Medusa
 resource "aws_ecs_service" "medusa_service" {
   name            = "medusa-service"
   cluster         = aws_ecs_cluster.medusa_cluster.id
@@ -82,5 +78,12 @@ resource "aws_ecs_service" "medusa_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = module.vpc.public_subnets
-    assi
+    subnets          = module.vpc.public_subnets
+    security_groups  = [aws_security_group.medusa_sg.id]
+    assign_public_ip = true
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.ecs_execution_policy
+  ]
+}

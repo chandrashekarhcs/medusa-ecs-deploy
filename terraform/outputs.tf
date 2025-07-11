@@ -22,3 +22,5 @@ output "medusa_task_definition" {
   description = "ARN of the task definition"
   value       = aws_ecs_task_definition.medusa_task.arn
 }
+
+
